@@ -1,47 +1,59 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useUsersStore, useUsersStoreRefs } from '@/stores/useUsersStore'
-import type { SelectInterface } from '@/types/SelectInterface'
+import { ref } from "vue";
+import { useUsersForm } from "@/composables/useUsersForm";
+import { Icon } from "@iconify/vue";
 
-const options = ref<SelectInterface[]>([
-  { value: 'LDAP', label: 'LDAP' },
-  { value: 'Локальная', label: 'Локальная' },
-])
-
-const { deleteUser } = useUsersStore()
-const { users } = useUsersStoreRefs()
+const { users, options, v$, trySave, onTagInput, handleDeleteUser } = useUsersForm();
+const TheadList = ref<string[]>(["Метки", "Тип записи", "Логин", "Пароль"]);
 </script>
 
 <template>
   <n-table :bordered="false" :single-line="false">
     <thead>
       <tr>
-        <th>Метки</th>
-        <th>Тип записи</th>
-        <th>Логин</th>
-        <th>Пароль</th>
+        <th v-for="(item, i) in TheadList" :key="'thead-item-' + i">{{ item }}</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="(user, idx) in users" :key="user.user_id">
-        <!-- <td><n-input v-model:value="value" type="text" placeholder="Basic Input" /></td> -->
-        <td>
+        <td style="width: 25%">
+          <n-input
+            v-model:value="user.raw_tags"
+            @update:value="onTagInput(user, $event)"
+            @blur="trySave(user, 'raw_tags')"
+            placeholder="Введите метки через ;"
+            :maxlength="100"
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 5 }"
+          />
+        </td>
+        <td style="width: 25%">
           <n-select v-model:value="user.post_type" :options="options" />
         </td>
-        <td>
-          <n-input v-model:value="user.user_login" type="text" placeholder="Basic Input" />
-        </td>
-        <td>
+        <td style="width: 25%">
           <n-input
-            v-model="user.user_pass"
+            v-model:value="user.user_login"
+            :status="v$[idx].user_login.$error ? 'error' : undefined"
+            placeholder="Введите логин"
+            @blur="trySave(user, 'login')"
+          />
+        </td>
+        <td style="width: 25%">
+          <n-input
+            v-if="user.post_type === 'Локальная'"
+            v-model:value="user.user_pass"
             type="password"
-            show-password-on="mousedown"
-            placeholder="Password"
-            :maxlength="8"
+            show-password-on="click"
+            :maxlength="100"
+            :status="v$[idx].user_pass?.$error ? 'error' : undefined"
+            placeholder="Пароль"
+            @blur="trySave(user, 'pass')"
           />
         </td>
         <td>
-          <n-button tertiary type="error" @click="deleteUser(idx)"> 🗑 </n-button>
+          <n-button tertiary type="error" @click="handleDeleteUser(user.user_id)">
+            <Icon icon="openmoji:wastebasket" :width="20" />
+          </n-button>
         </td>
       </tr>
     </tbody>

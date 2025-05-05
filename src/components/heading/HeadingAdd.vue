@@ -1,7 +1,7 @@
 <template>
   <div class="headingAdd">
     <h1>Учетные записи</h1>
-    <n-button tertiary circle @click="createUser()">
+    <n-button tertiary circle @click="handleCreateUser()">
       <template #icon>
         <Icon icon="ic:baseline-plus" />
       </template>
@@ -10,9 +10,17 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import { useUsersStore } from '@/stores/useUsersStore'
-const { createUser } = useUsersStore()
+import { Icon } from "@iconify/vue";
+import { useUsersStore } from "@/stores/useUsersStore";
+import { useMessage } from "naive-ui";
+
+const { createUser } = useUsersStore();
+const message = useMessage();
+
+const handleCreateUser = () => {
+  createUser();
+  message.success("Пользователь успешно добавлен");
+};
 </script>
 
 <style scoped>

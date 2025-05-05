@@ -1,6 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
 import type { UserInterface } from '@/types/UserInterface'
-import type { SelectInterface } from '@/types/SelectInterface'
 
 export const useUsersStore = defineStore('work', {
   state: () => ({
@@ -10,20 +9,24 @@ export const useUsersStore = defineStore('work', {
     createUser() {
       this.users.push({
         user_id: Date.now(),
-        post_type: {
-          label: 'Локальный',
-          value: 'Локальный',
-        } as SelectInterface,
+        post_type: 'Локальная',
         user_login: '',
         user_pass: null,
+        raw_tags: '',
+        tags: [],
       })
     },
-    deleteUser(index: number) {
-      this.users.splice(index, 1)
+    deleteUser(userId: number | string) {
+      this.users = this.users.filter((user) => user.user_id !== userId)
     },
-    editUser() {},
-    saveUser() {},
+    saveUser(updatedUser: UserInterface) {
+      const index = this.users.findIndex((u) => u.user_id === updatedUser.user_id)
+      if (index !== -1) {
+        this.users[index] = { ...updatedUser }
+      }
+    },
   },
+  persist: [{ paths: ['users'], storage: localStorage }],
 })
 
 export const useUsersStoreRefs = () => storeToRefs(useUsersStore())
