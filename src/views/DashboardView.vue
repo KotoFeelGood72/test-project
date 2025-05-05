@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import type { SelectInterface } from '@/types/SelectInterface'
 import { ref } from 'vue'
+import { useUsersStore, useUsersStoreRefs } from '@/stores/useUsersStore'
+import type { SelectInterface } from '@/types/SelectInterface'
 
 const options = ref<SelectInterface[]>([
   { value: 'LDAP', label: 'LDAP' },
   { value: 'Локальная', label: 'Локальная' },
 ])
+
+const { deleteUser } = useUsersStore()
+const { users } = useUsersStoreRefs()
 </script>
 
 <template>
@@ -19,21 +23,25 @@ const options = ref<SelectInterface[]>([
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td><n-input v-model:value="value" type="text" placeholder="Basic Input" /></td>
+      <tr v-for="(user, idx) in users" :key="user.user_id">
+        <!-- <td><n-input v-model:value="value" type="text" placeholder="Basic Input" /></td> -->
         <td>
-          <n-select v-model:value="value" :options="options" />
+          <n-select v-model:value="user.post_type" :options="options" />
         </td>
         <td>
-          <n-input v-model:value="value" type="text" placeholder="Basic Input" />
+          <n-input v-model:value="user.user_login" type="text" placeholder="Basic Input" />
         </td>
         <td>
           <n-input
+            v-model="user.user_pass"
             type="password"
             show-password-on="mousedown"
             placeholder="Password"
             :maxlength="8"
           />
+        </td>
+        <td>
+          <n-button tertiary type="error" @click="deleteUser(idx)"> 🗑 </n-button>
         </td>
       </tr>
     </tbody>
